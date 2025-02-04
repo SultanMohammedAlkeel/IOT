@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تحكم المصباح عبر الإنترنت</title>
+    <script>
+        async function fetchStatus() {
+            try {
+                let response = await fetch("http://alkheelsultan.lovestoblog.com/IOT/get_status.php");
+                let data = await response.json();
+                document.getElementById("led-status").innerText = "حالة المصباح: " + data.status;
+            } catch (error) {
+                console.error("Error fetching status:", error);
+            }
+        }
+
+        setInterval(fetchStatus, 5000); // تحديث البيانات كل 5 ثوانٍ
+    </script>
+</head>
+<body>
+    <h1>حالة المصباح</h1>
+    <p id="led-status">جاري تحميل البيانات...</p>
+</body>
+</html>
