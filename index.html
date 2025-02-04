@@ -1,26 +1,52 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحكم المصباح عبر الإنترنت</title>
-  <script>
-    async function fetchStatus() {
-        try {
-            let response = await fetch("https://nocors.me/http://alkheelsultan.lovestoblog.com/IOT/get_status.php");
-            let data = await response.json();
-            document.getElementById("led-status").innerText = "حالة المصباح: " + data.status;
-        } catch (error) {
-            console.error("Error fetching status:", error);
+    <title>ESP32 LED Control via ThingSpeak</title>
+    <script>
+        const writeApiKey = "A5LBZ51V3R7KSNHV"; // ThingSpeak Write API Key
+        const readApiKey = "I78ZDV3LMLGINRSV";  // ThingSpeak Read API Key
+        const channelId = "2829477";            // ThingSpeak Channel ID
+
+        // Function to send ON/OFF status to ThingSpeak
+        async function updateThingSpeak(status) {
+            const url = `https://api.thingspeak.com/update?api_key=${writeApiKey}&field1=${status === 'ON' ? 1 : 0}`;
+            
+            try {
+                let response = await fetch(url);
+                if (response.ok) {
+                    document.getElementById("status").innerText = `Status sent: ${status}`;
+                } else {
+                    document.getElementById("status").innerText = "Error sending request.";
+                }
+            } catch (error) {
+                console.error("Error sending request:", error);
+                document.getElementById("status").innerText = "Connection error.";
+            }
         }
-    }
 
-    setInterval(fetchStatus, 5000); // تحديث البيانات كل 5 ثوانٍ
-</script>
+        // Function to fetch the latest LED status from ThingSpeak
+        async function fetchStatus() {
+            const url = `https://api.thingspeak.com/channels/${channelId}/fields/1.json?api_key=${readApiKey}&results=1`;
+            
+            try {
+                let response = await fetch(url);
+                let data = await response.json();
+                if (data.feeds.length > 0) {
+                    let latestStatus = data.feeds[0].field1;
+                    document.getElementById("status").innerText = `LED Status: ${latestStatus == 1 ? 'ON' : 'OFF'}`;
+                }
+            } catch (error) {
+                console.error("Error fetching status:", error);
+            }
+        }
 
+        setInterval(fetchStatus, 5000); // Update status every 5 seconds
+    </script>
 </head>
 <body>
-    <h1>حالة المصباح</h1>
-    <p id="led-status">جاري تحميل البيانات...</p>
-</body>
-</html>
+    <h1>ESP32 LED Control via ThingSpeak</h1>
+    <button onclick="updateThingSpeak('ON')">Turn ON</button>
+    <button onclick="updateThingSpeak('OFF')">Turn OFF</button>
+    <p id="status">Status: Loading...</p
